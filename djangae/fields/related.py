@@ -11,16 +11,15 @@ from djangae.forms.fields import (
 )
 from django.utils import six
 
-class RelatedIteratorRel(ForeignObjectRel):
-    def __init__(self, to, related_name=None, limit_choices_to=None):
-        self.to = to
-        self.related_name = related_name
-        self.related_query_name = None
-        self.field_name = None
-        self.parent_link = None
-        self.on_delete = models.DO_NOTHING
 
-        super(RelatedIteratorRel, self).__init__(*args, **kwargs)
+class RelatedSetRel(ForeignObjectRel):
+    def __init__(self, *args, **kwargs):
+        for kwarg in ("parent_link", "on_delete", "related_query_name"):
+            if kwargs.get(kwarg):
+                raise ValueError("{} is not a supported argument for RelatedSetRel".format(kwarg))
+
+        kwargs["on_delete"] = models.DO_NOTHING
+        super(RelatedSetRel, self).__init__(*args, **kwargs)
         self.field_name = None
 
     def is_hidden(self):
@@ -252,11 +251,16 @@ class RelatedIteratorField(RelatedField):
     empty_strings_allowed = False
 
     def __init__(self, model, limit_choices_to=None, related_name=None, **kwargs):
-        kwargs["rel"] = RelatedIteratorRel(
+        kwargs["rel"] = RelatedSetRel(
+            self,
             model,
             related_name=related_name,
             limit_choices_to=limit_choices_to
         )
+
+        kwargs["default"] = set
+        kwargs["null"] = True
+
         super(RelatedIteratorField, self).__init__(**kwargs)
 
     def deconstruct(self):
