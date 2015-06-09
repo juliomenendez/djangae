@@ -20,8 +20,7 @@ class RelatedIteratorRel(ForeignObjectRel):
         self.parent_link = None
         self.on_delete = models.DO_NOTHING
 
-        kwargs["on_delete"] = models.DO_NOTHING
-        super(RelatedSetRel, self).__init__(*args, **kwargs)
+        super(RelatedIteratorRel, self).__init__(*args, **kwargs)
         self.field_name = None
 
     def is_hidden(self):
